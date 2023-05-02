@@ -1,51 +1,73 @@
 class Cep
-    CEP_RANGES = [
-    {range_end: 19999999, state: 'São Paulo(SP)'},
-    {range_end: 28999999, state: 'Rio de Janeiro(RJ)'},
-    {range_end: 29999999, state: 'Espírito Santo(ES)'},
-    {range_end: 39999999, state: 'Minas Gerais(MG)'},
-    {range_end: 87999999, state: 'Paraná(PR)'},
-    {range_end: 89999999, state: 'Santa Catarina(SC)'},
-    {range_end: 99999999, state: 'Rio Grande do Sul(RS)'},
-    {range_end: 48999999, state: 'Bahia(BA)'},
-    {range_end: 49999999, state: 'Sergipe(SE)'},
-    {range_end: 56999999, state: 'Pernambuco(PE)'},
-    {range_end: 57999999, state: 'Alagoas(AL)'},
-    {range_end: 58999999, state: 'Paraíba(PB)'},
-    {range_end: 59999999, state: 'Rio Grande do Norte(RN)'},
-    {range_end: 63999999, state: 'Ceará(CE)'},
-    {range_end: 64999999, state: 'Piauí(PI)'},
-    {range_end: 65999999, state: 'Maranhão(MA)'},
-    {range_end: 68899999, state: 'Pará(PA)'},
-    {range_end: 68999999, state: 'Amapá(AP)'},
-    {range_end: 69299999, state: 'Amazonas(AM)'},
-    {range_end: 69399999, state: 'Roraima(RR)'},
-    {range_end: 69899999, state: 'Amazonas(AM)'},
-    {range_end: 69999999, state: 'Acre(AC)'},
-    {range_end: 76999999, state: 'Rondônia(RO)'},
-    {range_end: 77999999, state: 'Tocantins(TO)'},
-    {range_end: 72799999, state: 'Distrito Federal(DF)'},
-    {range_end: 72999999, state: 'Goiás(GO)'},
-    {range_end: 73699999, state: 'Distrito Federal(DF)'},
-    {range_end: 76799999, state: 'Goiás(GO)'},
-    {range_end: 78899999, state: 'Mato Grosso(MT)'},
-    {range_end: 79999999, state: 'Mato Grosso do Sul(MS)'}
+  CEP_RANGES = [
+  { range_end: 19999999, code: 'SP', name: 'São Paulo' },
+  { range_end: 28999999, code: 'RJ', name: 'Rio de Janeiro' },
+  { range_end: 29999999, code: 'ES', name: 'Espírito Santo' },
+  { range_end: 39999999, code: 'MG', name: 'Minas Gerais' },
+  { range_end: 87999999, code: 'PR', name: 'Paraná' },
+  { range_end: 89999999, code: 'SC', name: 'Santa Catarina' },
+  { range_end: 99999999, code: 'RS', name: 'Rio Grande do Sul' },
+  { range_end: 48999999, code: 'BA', name: 'Bahia' },
+  { range_end: 49999999, code: 'SE', name: 'Sergipe' },
+  { range_end: 56999999, code: 'PE', name: 'Pernambuco' },
+  { range_end: 57999999, code: 'AL', name: 'Alagoas' },
+  { range_end: 58999999, code: 'PB', name: 'Paraíba' },
+  { range_end: 59999999, code: 'RN', name: 'Rio Grande do Norte' },
+  { range_end: 63999999, code: 'CE', name: 'Ceará' },
+  { range_end: 64999999, code: 'PI', name: 'Piauí' },
+  { range_end: 65999999, code: 'MA', name: 'Maranhão' },
+  { range_end: 68899999, code: 'PA', name: 'Pará' },
+  { range_end: 68999999, code: 'AP', name: 'Amapá' },
+  { range_end: 69299999, code: 'AM', name: 'Amazonas' },
+  { range_end: 69399999, code: 'RR', name: 'Roraima' },
+  { range_end: 69899999, code: 'AM', name: 'Amazonas' },
+  { range_end: 69999999, code: 'AC', name: 'Acre' },
+  { range_end: 76999999, code: 'RO', name: 'Rondônia' },
+  { range_end: 77999999, code: 'TO', name: 'Tocantins' },
+  { range_end: 72799999, code: 'DF', name: 'Distrito Federal' },
+  { range_end: 72999999, code: 'GO', name: 'Goiás' },
+  { range_end: 73699999, code: 'DF', name: 'Distrito Federal' },
+  { range_end: 76799999, code: 'GO', name: 'Goiás' },
+  { range_end: 78899999, code: 'MT', name: 'Mato Grosso' },
+  { range_end: 79999999, code: 'MS', name: 'Mato Grosso do Sul' }
   ]
-    attr_reader :cep, :state
-    def initialize(cep)
-        @cep = cep.sub('-', '').sub('.', '')
-        @state = find_state_by_cep
-    end
 
-    def find_state_by_cep
-        cep_number = @cep.to_i
-        CEP_RANGES.sort_by { |range| range[:range_end] }.each do |cep_range|
-          return cep_range[:state] if cep_number <= cep_range[:range_end]
-        end
-        nil
+  attr_reader :state_code, :state_name, :cep_formatted, :cep_digits
+  def initialize(cep)
+    cep_fields = match_cep cep.to_s
+    if !cep_fields.nil?
+      @cep_digits = "#{cep_fields[0]}#{cep_fields[1]}#{cep_fields[2]}".to_i
+      @cep_formatted = "#{cep_fields[0].rjust(2, '0')}#{cep_fields[1]}-#{cep_fields[2]}"
+      state = find_state_by_cep
+      @state_code = state[:code]
+      @state_name = state[:name]
     end
+  end
+
+  def find_state_by_cep
+    cep_number = @cep_digits
+    CEP_RANGES.sort_by { |range| range[:range_end] }.each do |cep_range|
+      return cep_range if cep_number <= cep_range[:range_end]
+    end
+    nil
+  end
+
+  def match_cep(cep)
+    cep_regex = /^(\d{1,2})\.?(\d{3})\-?(\d{3})$/
+    match_data = cep.match(cep_regex)
+    if match_data
+      return match_data[1..3]
+    else
+      return nil
+    end
+  end
+
+  def ==(other)
+    @cep_digits == other.cep_digits
+  end
+
+  def to_s
+    @cep_formatted
+  end
 
 end
-
-
-puts Cep.new('69830-000').state # Output: São Paulo(SP)
